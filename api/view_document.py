@@ -12,6 +12,6 @@ def view_document(directories, document):
             shelf = '-'
         message = f'Тип: {doc_type}\nНомер: {number}\nВладелец: {owner}\nПолка: {shelf[0]}'
     else:
-        message = 'Формат джокумента не поддерживается'
+        message = 'Формат документа не поддерживается'
 
     return message
