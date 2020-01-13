@@ -1,7 +1,8 @@
 documents = [
     {"type": "passport", "number": "2207 876234", "name": "Василий Гупкин"},
     {"type": "invoice", "number": "11-2", "name": "Геннадий Покемонов"},
-    {"type": "insurance", "number": "10006", "name": "Аристарх Павлов"}
+    {"type": "insurance", "number": "10006", "name": "Аристарх Павлов"},
+    {"type":"0"}
 ]
 directories = {
     '1': ['2207 876234', '11-2', '5455 028765'],
@@ -80,7 +81,10 @@ def doc_program(doc, dirs):
         return message
 
     def is_document(document):
-        return type(document) == type(dict()) and document.get('number', False)
+        return (type(document) == type(dict()) and
+                document.get('number', False) and
+                document.get('name', False) and
+                document.get('type', False))
 
     def is_exit(command, elem):
         if elem == -1:
@@ -286,6 +290,25 @@ def doc_program(doc, dirs):
             command['message'] = f'Успешно добавлена полка с номером {shelf}'
             return True
 
+    def list_all_owner(arg):
+        docs = arg['documents']
+        command = arg['command']
+        counter = 0
+        if len(docs) > 0:
+            for doc in docs:
+                counter += 1
+                try:
+                    name = doc['name']
+                except KeyError as e:
+                    command['message'] = f'Ошибка: Поле {e} в документе отсутствует'
+                    return False
+                else:
+                    command['message'] += f'{counter}. {name}\n'
+        else:
+            command['message'] = 'Документов нет'
+            return False
+        return True
+
     commands = {
         'p': {
             'func': get_people,
@@ -327,6 +350,12 @@ def doc_program(doc, dirs):
             'func': add_new_shelf,
             'component': 'add_shelf',
             'start': 'Добавление новой полки.',
+            'message': '',
+        },
+        'ln': {
+            'func': list_all_owner,
+            'component': 'all_owner',
+            'start': 'Список имен владельцев.\n',
             'message': '',
         },
         'h': {
