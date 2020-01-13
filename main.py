@@ -1,153 +1,29 @@
 from data.documents import documents
 from data.directories import directories
 
+from api.get_document_index import get_document_index
+from api.get_shelf import get_shelf
+from api.get_document_shelf import get_document_shelf
+from api.dir_delete_doc_number import dir_delete_doc_number
+from api.dir_add_doc_number import dir_add_doc_number
+from api.get_list import get_list
+from api.view_document import view_document
+from api.create_document import create_document
+from api.remove_document import remove_document
+from api.add_document import add_document
+from api.is_document import is_document
+from api.is_exit import is_exit
+from api.run_command import run_command
+from api.get_command_list import get_command_list
+
+from api.messenger.post_message import post_message
+from api.messenger.inputs.doc_number_input import doc_number_input
+from api.messenger.inputs.doc_type_input import doc_type_input
+from api.messenger.inputs.doc_owner_input import doc_owner_input
+from api.messenger.inputs.dirs_number_input import dirs_number_input
+
 
 def doc_program(doc, dirs):
-    def get_document_index(documents, document_number):
-        for index, document in enumerate(documents):
-            if document['number'] == document_number:
-                return index
-        return -1
-
-    def get_shelf(directories, shelf):
-        return directories.get(shelf, -1)
-
-    def get_document_shelf(directories, document_number):
-        for shelf_number, document_numbers in directories.items():
-            for index, number in enumerate(document_numbers):
-                if number == document_number:
-                    return [shelf_number, index]
-        return -1
-
-    def dir_delete_doc_number(directories, shelf_document_index):
-        shelf_number, index = shelf_document_index
-        shelf = get_shelf(directories, shelf_number)
-        if shelf:
-            new_value = list(shelf)
-            result = new_value.pop(index)
-            if (result or -1) != -1:
-                directories[shelf_number] = tuple(new_value)
-                return result
-            else:
-                return -1
-        return -1
-
-    def dir_add_doc_number(directories, document_number, shelf_number):
-        shelf = directories.setdefault(shelf_number, [])
-        new_value = list(directories.get(shelf_number))
-        new_value.append(document_number)
-        directories[shelf_number] = tuple(new_value)
-        return document_number
-
-    def get_list(documents, directories):
-        result = ''
-        for index, document in enumerate(documents):
-            result += f'{index + 1}:\n{view_document(directories, document)}\n\n'
-        result += f'Всего документов: {len(documents)}'
-        return result or -1
-
-    def create_document(document_number, docyment_type, owner):
-        return {'type': docyment_type, 'number': document_number, 'name': owner}
-
-    def add_document(documents, directories, document, shelf_number):
-        documents.append(document)
-        directories.setdefault(shelf_number, []).append(document['number'])
-        return [document, shelf_number]
-
-    def remove_document(documents, directories, document_index, shelf_document_index):
-        result_doc = documents.pop(document_index)
-        result_dir = dir_delete_doc_number(directories, shelf_document_index)
-        result = result_doc and result_dir != -1
-        if result:
-            return view_document(directories, result_doc)
-
-    def view_document(directories, document):
-        doc_type = document['type']
-        number = document['number']
-        owner = document['name']
-        shelf = get_document_shelf(directories, document['number'])
-        if shelf == -1:
-            shelf = '-'
-        message = f'Тип: {doc_type}\nНомер: {number}\nВладелец: {owner}\nПолка: {shelf[0]}'
-        return message
-
-    def is_document(document):
-        return (type(document) == type(dict()) and
-                document.get('number', False) and
-                document.get('name', False) and
-                document.get('type', False))
-
-    def is_exit(command, elem):
-        if elem == -1:
-            command['message'] = 'Отмена команды'
-            return True
-
-    def not_validate_msg(command):
-        command['message'] = 'Введите валидное значение или введите exit для отмены команды'
-        post_message(command)
-
-    def doc_number_input(command):
-        result = None
-        while not result:
-            result = input(f'\n{command["component"]}@: Введите номер документа: ').strip()
-            if result.isspace() or len(result) == 0:
-                not_validate_msg(command)
-                result = None
-            elif result == 'exit':
-                return -1
-        return result
-
-    def doc_type_input(command):
-        result = None
-        while not result:
-            result = input(f'\n{command["component"]}@: Введите тип документа: ').strip()
-            if result.isspace() or len(result) == 0:
-                not_validate_msg(command)
-                result = None
-            elif result == 'exit':
-                return -1
-        return result
-
-    def doc_owner_input(command):
-        result = None
-        while not result:
-            result = input(f'\n{command["component"]}@: Введите имя владельца: ').strip()
-            if result.isspace() or len(result) == 0:
-                not_validate_msg(command)
-                result = None
-            elif result == 'exit':
-                return -1
-        return result
-
-    def dirs_number_input(command):
-        result = None
-        while not result:
-            result = input(f'\n{command["component"]}@: Введите номер полки: ').strip()
-            if result.isspace() or len(result) == 0:
-                not_validate_msg(command)
-                result = None
-            elif result == 'exit':
-                return -1
-        return result
-
-    def post_message(command):
-        print(f'\n{command["component"]}@: {command["message"]}')
-
-    def run_command(command, arg=None):
-        if arg is None:
-            arg = {}
-        return command['func'](arg)
-
-    def get_command_list(arg):
-        command = arg['command']
-        commands = arg['commands']
-        message = ''
-        for key, value in commands.items():
-            message += f'\n"{key}" - {value["start"]}'
-        message += '"exit" - Выход'
-        command['message'] = message
-        return True
-
     def get_people(arg):
         doc = arg['documents']
         command = arg['command']
