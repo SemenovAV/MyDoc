@@ -6,10 +6,9 @@ def list_all_owner(arg):
     counter = 0
     if len(docs) > 0:
         for doc in docs:
-
             try:
                 name = doc['name']
-            except KeyError as e:
+            except KeyError:
                 errors += 1
                 break
             else:
